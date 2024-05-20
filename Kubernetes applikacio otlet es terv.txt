@@ -1,0 +1,30 @@
+Kubernetes applikacio otlet es terv
+
+Taxi app
+
+1. microservice ami autot keres - deployment
+2. microservice ami sofort keres - deployment
+3. price calculator - deployment
+4. kliens ??? (deployment?)
+5. mongo db - statefullset
+
+ezek kommunikalnak KAFKA-n (data flow):
+
+					    retaurant ->      
+kliens kezdemenyez ->		  			-------> price calculator(restaurant, sofor) ---> kliens
+						sofor ->
+
+
+
+
+
+egy adatbazis, ami syncelve van (tartalmazza az autokat es a soforoket + history for rides)
+
+
+
+
+QUESTIONS
+---------
+
+what to do with helm ??? - maybe for installing and starting kafka + bitnami (nala van a kafka?)
+why to use zookeper ??? (something w loadbalancer)
