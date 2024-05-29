@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restaurant-deployment
+  labels:
+    app: restaurant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restaurant
+  template:
+    metadata:
+      labels:
+        app: restaurant
+    spec:
+      containers:
+        - name: restaurant-container
+          image: registry.gitlab.com/zoleebossthebosspericulos/kubernetes/restaurant:latest
+          envFrom:
+            - configMapRef:
+                name: mongodb-configmap
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restaurant-service
+spec:
+  selector:
+    app: restaurant
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

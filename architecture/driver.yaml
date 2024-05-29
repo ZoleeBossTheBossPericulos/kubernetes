@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: driver-founder-deployment
+  labels:
+    app: driver-founder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: driver-founder
+  template:
+    metadata:
+      labels:
+        app: driver-founder
+    spec:
+      containers:
+        - name: driver-founder-container
+          image: registry.gitlab.com/zoleebossthebosspericulos/kubernetes/driver:latest
+          envFrom:
+            - configMapRef:
+                name: mongodb-configmap
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: driver-founder-service
+spec:
+  selector:
+    app: driver-founder
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

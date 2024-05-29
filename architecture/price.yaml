@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: price-deployment
+  labels:
+    app: price
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: price
+  template:
+    metadata:
+      labels:
+        app: price
+    spec:
+      containers:
+        - name: price-container
+          image: registry.gitlab.com/zoleebossthebosspericulos/kubernetes/price:latest
+          envFrom:
+            - configMapRef:
+                name: mongodb-configmap
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: price-service
+spec:
+  selector:
+    app: price
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000

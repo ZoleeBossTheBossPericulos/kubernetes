@@ -1,0 +1,3 @@
+helm install mongodb-helm oci://registry-1.docker.io/bitnamicharts/mongodb --set architecture=replicaset
+
+kubectl port-forward svc/mongodb-helm-headless 27017:27017
