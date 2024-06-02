@@ -6,7 +6,10 @@ const PORT = process.env.PORT || 3002;
 
 const kafka = new Kafka({
   clientId: "price-calculator",
-  brokers: ["localhost:9092"], // Replace with your Kafka broker addresses
+  brokers: [
+    "kafka-release.kafka.svc.cluster.local:9092",
+    "kafka-release-0.kafka-release-headless.kafka.svc.cluster.local:9092",
+  ],
 });
 
 const producer = kafka.producer();

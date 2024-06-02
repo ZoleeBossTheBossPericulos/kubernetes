@@ -1,0 +1,27 @@
+image:
+  debug: true
+replicaCount: 3
+tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Equal"
+    value: ""
+    effect: "NoSchedule"
+externalAccess:
+  enabled: false
+  autoDiscovery:
+    enabled: true
+kraft:
+  enabled: false
+extraEnvVars:
+  - name: KAFKA_ENABLE_KRAFT
+    value: "false"
+  - name: KAFKA_CFG_DELETE_TOPIC_ENABLE
+    value: "true" # Add this line to enable topic deletion
+  - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+    value: "true" # Add this line to enable topic auto-creation
+zookeeper:
+  enabled: true
+  replicaCount: 3
+  persistence:
+    enabled: true
+    size: 2Gi

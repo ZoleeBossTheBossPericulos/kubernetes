@@ -4,13 +4,17 @@ const { MongoClient } = require("mongodb");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const MONGODB_URI = process.env.MONGODB_URI || "";
-
+const MONGODB_URI =
+  "mongodb+srv://teszt:teszt@tervezes-klaszter-0.o6azrlb.mongodb.net/test";
+// const MONGODB_URI = process.env.MONGODB_URI || "";
 app.use(express.json());
 
 const kafka = new Kafka({
   clientId: "restaurant-service",
-  brokers: ["localhost:9092"], // Replace with your Kafka broker addresses
+  brokers: [
+    "kafka-release.kafka.svc.cluster.local:9092",
+    "kafka-release-0.kafka-release-headless.kafka.svc.cluster.local:9092",
+  ],
 });
 
 const producer = kafka.producer();

@@ -17,11 +17,16 @@ spec:
       containers:
         - name: price-container
           image: registry.gitlab.com/zoleebossthebosspericulos/kubernetes/price:latest
-          envFrom:
-            - configMapRef:
-                name: mongodb-configmap
           ports:
-            - containerPort: 3000
+            - containerPort: 3002
+          env:
+            - name: PORT
+              value: "3002"
+            - name: KAFKA_BROKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-configmap
+                  key: KAFKA_BROKERS
 ---
 apiVersion: v1
 kind: Service
@@ -32,5 +37,5 @@ spec:
     app: price
   ports:
     - protocol: TCP
-      port: 3000
-      targetPort: 3000
+      port: 3002
+      targetPort: 3002

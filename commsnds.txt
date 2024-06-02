@@ -1,3 +1,14 @@
 helm install mongodb-helm oci://registry-1.docker.io/bitnamicharts/mongodb --set architecture=replicaset
 
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm install my-release bitnami/kafka
+
+helm install my-release oci://registry-1.docker.io/bitnamicharts/kafka
 kubectl port-forward svc/mongodb-helm-headless 27017:27017
+
+helm install nginx-ingress ingress-nginx/ingress-nginx --set controller.publishService.enabled=true
+kubectl --namespace default get services -o wide -w nginx-ingress-ingress-nginx-controller
+
+docker build -t registry.gitlab.com/zoleebossthebosspericulos/kubernetes/driver .
+docker push registry.gitlab.com/zoleebossthebosspericulos/kubernetes/driver 

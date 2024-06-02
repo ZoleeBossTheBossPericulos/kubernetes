@@ -17,11 +17,21 @@ spec:
       containers:
         - name: driver-founder-container
           image: registry.gitlab.com/zoleebossthebosspericulos/kubernetes/driver:latest
-          envFrom:
-            - configMapRef:
-                name: mongodb-configmap
           ports:
             - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-configmap
+                  key: DATABASE_URL
+            - name: KAFKA_BROKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-configmap
+                  key: KAFKA_BROKERS
 ---
 apiVersion: v1
 kind: Service
