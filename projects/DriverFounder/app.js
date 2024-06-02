@@ -4,9 +4,7 @@ const { Kafka } = require("kafkajs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  "mongodb+srv://teszt:teszt@tervezes-klaszter-0.o6azrlb.mongodb.net/test";
+const MONGODB_URI = process.env.MONGODB_URI || "";
 
 app.use(express.json());
 
