@@ -3,8 +3,10 @@ const { Kafka } = require("kafkajs");
 const { MongoClient } = require("mongodb");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI || "your_mongodb_uri";
+const PORT = process.env.PORT || 3001;
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  "mongodb+srv://teszt:teszt@tervezes-klaszter-0.o6azrlb.mongodb.net/test";
 
 app.use(express.json());
 
@@ -38,7 +40,7 @@ app.get("/restaurants", async (req, res) => {
   let client;
   try {
     client = await connectToMongoDB(MONGODB_URI);
-    const db = client.db();
+    const db = client.db("kubernetes");
     const restaurants = await db.collection("restaurants").find({}).toArray();
     res.json(restaurants);
   } catch (err) {
@@ -64,7 +66,7 @@ const runKafka = async () => {
         let client;
         try {
           client = await connectToMongoDB(MONGODB_URI);
-          const db = client.db();
+          const db = client.db("kubernetes");
           const restaurants = await db
             .collection("restaurants")
             .find({})

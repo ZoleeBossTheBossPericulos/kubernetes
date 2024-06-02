@@ -4,7 +4,9 @@ const { Kafka } = require("kafkajs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI || "your_mongodb_uri";
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  "mongodb+srv://teszt:teszt@tervezes-klaszter-0.o6azrlb.mongodb.net/test";
 
 app.use(express.json());
 
@@ -46,7 +48,7 @@ app.get("/drivers", async (req, res) => {
   let client;
   try {
     client = await connectToMongoDB(MONGODB_URI);
-    const db = client.db();
+    const db = client.db("kubernetes");
     const drivers = await db.collection("drivers").find({}).toArray();
     res.json(drivers);
   } catch (err) {
@@ -67,11 +69,11 @@ const runKafka = async () => {
 
   await consumer.run({
     eachMessage: async ({ message }) => {
-      if (message.key.toString() === "find-driver") {
+      if (message.key.toString() === "driver") {
         let client;
         try {
           client = await connectToMongoDB(MONGODB_URI);
-          const db = client.db();
+          const db = client.db("kubernetes");
           const drivers = await db.collection("drivers").find({}).toArray();
           const driver = findCheapestDriver(drivers);
           await producer.send({
