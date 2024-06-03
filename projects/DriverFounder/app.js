@@ -71,17 +71,30 @@ const runKafka = async () => {
 
   await consumer.run({
     eachMessage: async ({ message }) => {
-      if (message.key.toString() === "driver") {
+      const key = message.key.toString();
+      const restaurant = JSON.parse(message.value.toString());
+      if (key === "driver") {
         let client;
         try {
           client = await connectToMongoDB(MONGODB_URI);
           const db = client.db("kubernetes");
           const drivers = await db.collection("drivers").find({}).toArray();
           const driver = findCheapestDriver(drivers);
-          await producer.send({
-            topic: "response-data",
-            messages: [{ key: "driver", value: JSON.stringify(driver) }],
-          });
+
+          if (driver == null) {
+            await producer.send({
+              topic: "response-data",
+              messages: [{ key: "bad_request", value: JSON.stringify(null) }],
+            });
+          } else {
+            await producer.send({
+              topic: "response-data",
+              messages: [
+                { key: "driver", value: JSON.stringify(driver) },
+                { key: "restaurant", value: JSON.stringify(restaurant) },
+              ],
+            });
+          }
         } catch (err) {
           console.error("Error processing Kafka message:", err);
         } finally {

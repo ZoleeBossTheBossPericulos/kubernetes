@@ -1,14 +1,27 @@
-helm install mongodb-helm oci://registry-1.docker.io/bitnamicharts/mongodb --set architecture=replicaset
-
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm install my-release bitnami/kafka
+helm -n kafka upgrade --install kafka-release bitnami/kafka --create-namespace --set persistence.size=8Gi,logPersistence.size=8Gi,volumePermissions.enabled=true,persistence.enabled=true,logPersistence.enabled=true,serviceAccount.create=true,rbac.create=true --version 23.0.7 -f .\architecture\kafkaValues.yaml
 
-helm install my-release oci://registry-1.docker.io/bitnamicharts/kafka
-kubectl port-forward svc/mongodb-helm-headless 27017:27017
+cd .\architecture
+
+kubectl apply -f .\driver.yaml
+kubectl apply -f .\price.yaml
+kubectl apply -f .\restaurant.yaml
+
 
 helm install nginx-ingress ingress-nginx/ingress-nginx --set controller.publishService.enabled=true
+
+kubectl apply -f .\ingress.yaml
+
 kubectl --namespace default get services -o wide -w nginx-ingress-ingress-nginx-controller
+
 
 docker build -t registry.gitlab.com/zoleebossthebosspericulos/kubernetes/driver .
 docker push registry.gitlab.com/zoleebossthebosspericulos/kubernetes/driver 
+
+
+docker build -t registry.gitlab.com/zoleebossthebosspericulos/kubernetes/price .
+docker push registry.gitlab.com/zoleebossthebosspericulos/kubernetes/price
+
+docker build -t registry.gitlab.com/zoleebossthebosspericulos/kubernetes/restaurant .
+docker push registry.gitlab.com/zoleebossthebosspericulos/kubernetes/restaurant

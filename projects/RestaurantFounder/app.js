@@ -74,12 +74,20 @@ const runKafka = async () => {
             .find({})
             .toArray();
           const restaurant = findRestaurant(restaurants, food);
-          await producer.send({
-            topic: "response-data",
-            messages: [
-              { key: "restaurant", value: JSON.stringify(restaurant) },
-            ],
-          });
+
+          if (restaurant == null) {
+            await producer.send({
+              topic: "response-data",
+              messages: [{ key: "bad_request", value: JSON.stringify(null) }],
+            });
+
+            return;
+          } else {
+            await producer.send({
+              topic: "request-data",
+              messages: [{ key: "driver", value: JSON.stringify(restaurant) }],
+            });
+          }
         } catch (err) {
           console.error("Error processing Kafka message:", err);
         } finally {

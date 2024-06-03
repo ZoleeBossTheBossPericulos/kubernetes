@@ -20,23 +20,20 @@ async function produceMessages(food) {
   await producer.connect();
   await producer.send({
     topic: "request-data",
-    messages: [
-      { key: "driver", value: "find-driver" },
-      { key: "restaurant", value: JSON.stringify({ food }) },
-    ],
+    messages: [{ key: "restaurant", value: JSON.stringify({ food }) }],
   });
 }
 
 // Function to consume messages
 async function consumeMessages() {
-  let driver = null;
-  let restaurant = null;
+  let driver = undefined;
+  let restaurant = undefined;
 
   await consumer.connect();
   await consumer.subscribe({ topic: "response-data", fromBeginning: true });
 
   await new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => reject(new Error("Timeout")), 15000);
+    const timeout = setTimeout(() => reject(new Error("Timeout")), 5000);
 
     consumer
       .run({
@@ -50,9 +47,12 @@ async function consumeMessages() {
             driver = value;
           } else if (key === "restaurant") {
             restaurant = value;
+          } else if (key == "bad_request") {
+            clearTimeout(timeout);
+            resolve({ driver: null, restaurant: null });
           }
 
-          if (driver && restaurant) {
+          if (driver != undefined && restaurant != undefined) {
             clearTimeout(timeout);
             resolve({ driver, restaurant });
           }
@@ -78,7 +78,12 @@ app.get("/price-calculator", async (req, res) => {
     // Consume responses
     const { driver, restaurant } = await consumeMessages();
 
-    if (driver == null || restaurant == null) {
+    if (
+      driver == null ||
+      restaurant == null ||
+      driver == undefined ||
+      restaurant == undefined
+    ) {
       return res.status(400).send("Driver or Restaurant is not available");
     }
 
