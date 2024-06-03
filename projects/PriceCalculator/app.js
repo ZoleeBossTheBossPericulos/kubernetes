@@ -15,88 +15,63 @@ const kafka = new Kafka({
 const producer = kafka.producer();
 const consumer = kafka.consumer({ groupId: "price-calculator-group" });
 
-// Function to produce messages
-async function produceMessages(food) {
-  await producer.connect();
-  await producer.send({
-    topic: "request-data",
-    messages: [{ key: "restaurant", value: JSON.stringify({ food }) }],
-  });
-}
-
-// Function to consume messages
-async function consumeMessages() {
-  let driver = undefined;
-  let restaurant = undefined;
-
-  await consumer.connect();
-  await consumer.subscribe({ topic: "response-data", fromBeginning: true });
-
-  await new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => reject(new Error("Timeout")), 5000);
-
-    consumer
-      .run({
-        eachMessage: async ({ message }) => {
-          const key = message.key.toString();
-          const value = JSON.parse(message.value.toString());
-
-          console.log(value);
-
-          if (key === "driver") {
-            driver = value;
-          } else if (key === "restaurant") {
-            restaurant = value;
-          } else if (key == "bad_request") {
-            clearTimeout(timeout);
-            resolve({ driver: null, restaurant: null });
-          }
-
-          if (driver != undefined && restaurant != undefined) {
-            clearTimeout(timeout);
-            resolve({ driver, restaurant });
-          }
-        },
-      })
-      .catch(reject);
-  });
-
-  return { driver, restaurant };
-}
-
 function getFoodPrice(foodName, restaurant) {
   return restaurant.foods.find((food) => food.name === foodName).price;
 }
 
-app.get("/price-calculator", async (req, res) => {
-  try {
-    const food = req.query.food;
+const runKafka = async () => {
+  let driver = undefined;
+  let restaurant = undefined;
+  let food = undefined;
 
-    // Produce messages to request driver and restaurant data
-    await produceMessages(food);
+  await producer.connect();
+  await consumer.connect();
+  await consumer.subscribe({ topic: "request-data", fromBeginning: true });
 
-    // Consume responses
-    const { driver, restaurant } = await consumeMessages();
+  await consumer.run({
+    eachMessage: async ({ message }) => {
+      const key = message.key.toString();
+      const value = JSON.parse(message.value.toString());
+      if (key === "price") {
+        food = value.food;
+        await producer.send({
+          topic: "request-data",
+          messages: [
+            { key: "find-restaurant", value: JSON.stringify({ food }) },
+          ],
+        });
+      } else if (key === "result") {
+        driver = value.driver;
+        restaurant = value.restaurant;
 
-    if (
-      driver == null ||
-      restaurant == null ||
-      driver == undefined ||
-      restaurant == undefined
-    ) {
-      return res.status(400).send("Driver or Restaurant is not available");
-    }
+        if (
+          driver == null ||
+          driver == undefined ||
+          restaurant == undefined ||
+          restaurant == null ||
+          food == null ||
+          food == undefined
+        ) {
+          await producer.send({
+            topic: "request-data",
+            messages: [
+              { key: "price", value: JSON.stringify({ price: null }) },
+            ],
+          });
+          return;
+        }
 
-    const price = driver.rate + getFoodPrice(food, restaurant);
-    res.send({ price });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  } finally {
-    await producer.disconnect();
-    await consumer.disconnect();
-  }
-});
+        const price = driver.rate + getFoodPrice(food, restaurant);
+        await producer.send({
+          topic: "response-data",
+          messages: [{ key: "price", value: JSON.stringify(price) }],
+        });
+      }
+    },
+  });
+};
+
+runKafka().catch(console.error);
 
 // Start the server
 app.listen(PORT, () => {

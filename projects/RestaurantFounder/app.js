@@ -63,7 +63,7 @@ const runKafka = async () => {
 
   await consumer.run({
     eachMessage: async ({ message }) => {
-      if (message.key.toString() === "restaurant") {
+      if (message.key.toString() === "find-restaurant") {
         const { food } = JSON.parse(message.value.toString());
         let client;
         try {
@@ -85,7 +85,9 @@ const runKafka = async () => {
           } else {
             await producer.send({
               topic: "request-data",
-              messages: [{ key: "driver", value: JSON.stringify(restaurant) }],
+              messages: [
+                { key: "find-driver", value: JSON.stringify(restaurant) },
+              ],
             });
           }
         } catch (err) {

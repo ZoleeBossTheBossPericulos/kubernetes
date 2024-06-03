@@ -73,7 +73,7 @@ const runKafka = async () => {
     eachMessage: async ({ message }) => {
       const key = message.key.toString();
       const restaurant = JSON.parse(message.value.toString());
-      if (key === "driver") {
+      if (key == "find-driver") {
         let client;
         try {
           client = await connectToMongoDB(MONGODB_URI);
@@ -88,10 +88,15 @@ const runKafka = async () => {
             });
           } else {
             await producer.send({
-              topic: "response-data",
+              topic: "request-data",
               messages: [
-                { key: "driver", value: JSON.stringify(driver) },
-                { key: "restaurant", value: JSON.stringify(restaurant) },
+                {
+                  key: "result",
+                  value: JSON.stringify({
+                    driver: driver,
+                    restaurant: restaurant,
+                  }),
+                },
               ],
             });
           }

@@ -25,3 +25,6 @@ docker push registry.gitlab.com/zoleebossthebosspericulos/kubernetes/price
 
 docker build -t registry.gitlab.com/zoleebossthebosspericulos/kubernetes/restaurant .
 docker push registry.gitlab.com/zoleebossthebosspericulos/kubernetes/restaurant
+
+docker build -t registry.gitlab.com/zoleebossthebosspericulos/kubernetes/api .
+docker push registry.gitlab.com/zoleebossthebosspericulos/kubernetes/api
